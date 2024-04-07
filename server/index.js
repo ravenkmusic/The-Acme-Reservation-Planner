@@ -8,7 +8,7 @@ const {
     createReservation,
     fetchReservations,
     destroyReservation
-} = require('.');
+} = require('./db');
 const express = require('express');
 const app = express();
 
@@ -70,5 +70,39 @@ app.use((error, req, res, next) => {
 
 
 //init function
+const init = async ()=> {
+    await client.connect();
+    console.log('Connected to database.');
+    await createTables();
+    console.log('Tables created.');
+    const [Lauren, Arnold, Grace, Fiola, Oyamel, Rania, Cranes] = await Promise.all([
+        createCustomer('Lauren'),
+        createCustomer('Arnold'),
+        createCustomer('Grace'),
+        createRestaurant('Fiola'),
+        createRestaurant('Oyamel'),
+        createRestaurant('Rania'),
+        createRestaurant('Cranes'),
+    ]);
+    console.log(`Lauren has an id of ${Lauren.id}.`);
+    console.log(`Fiola has an id of ${Fiola.id}. `);
+    console.log(await fetchCustomers());
+    console.log(await fetchRestaurants());
+    await Promise.all([
+        createReservation({date: '05/30/2024', party_count: 5, restaurant_id: Oyamel.id, customer_id: Lauren.id}),
+        createReservation({date: '04/25/2024', party_count: 2, restaurant_id: Fiola.id, customer_id: Arnold.id}),
+        createReservation({date: '06/11/2024', party_count: 4, restaurant_id: Cranes.id, customer_id: Lauren.id}),
+        createReservation({date: '05/13/2024', party_count: 8, restaurant_id: Rania.id, customer_id: Grace.id}),
+        createReservation({date: '07/16/2024', party_count: 3, restaurant_id: Oyamel.id, customer_id: Grace.id})
+    ]);
+    const reservations = await fetchReservations();
+    console.log(reservations);
+    await destroyReservation(reservations[0].id);
+    console.log(await fetchReservations);
+    
+    const port = process.env.PORT || 3000;
+    app.listen(port, ()=> console.log(`listening on port ${port}`));
+}
 
 //init invocation
+init ();
