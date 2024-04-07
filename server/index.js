@@ -82,7 +82,7 @@ const init = async ()=> {
         createRestaurant('Fiola'),
         createRestaurant('Oyamel'),
         createRestaurant('Rania'),
-        createRestaurant('Cranes'),
+        createRestaurant('Cranes')
     ]);
     console.log(`Lauren has an id of ${Lauren.id}.`);
     console.log(`Fiola has an id of ${Fiola.id}. `);
@@ -98,11 +98,11 @@ const init = async ()=> {
     const reservations = await fetchReservations();
     console.log(reservations);
     await destroyReservation(reservations[0].id);
-    console.log(await fetchReservations);
-    
+    console.log(await fetchReservations());
+
     const port = process.env.PORT || 3000;
     app.listen(port, ()=> console.log(`listening on port ${port}`));
-}
+};
 
 //init invocation
 init ();

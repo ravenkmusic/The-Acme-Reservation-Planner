@@ -4,26 +4,26 @@ const uuid = require('uuid');
 
 const createTables = async()=> {
     const SQL = `
+        DROP TABLE IF EXISTS reservations;
         DROP TABLE IF EXISTS customers;
         DROP TABLE IF EXISTS restaurants;
-        DROP TABLE IF EXIST reservations;
 
         CREATE TABLE customers(
             id UUID PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
+            name VARCHAR(100)
         );
 
         CREATE TABLE restaurants(
             id UUID PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
+            name VARCHAR(100)
         );
 
         CREATE TABLE reservations(
             id UUID PRIMARY KEY,
-            date DATE NOT NULL,
+            date DATE,
             party_count INTEGER NOT NULL,
             restaurant_id UUID REFERENCES restaurants(id) NOT NULL,
-            customer_id UUID REFERENCES customer(id) NOT NULL
+            customer_id UUID REFERENCES customers(id) NOT NULL
         );
     `;
     await client.query(SQL);
@@ -40,15 +40,27 @@ const createCustomer = async(name)=> {
 
 const createRestaurant = async(name)=>{
     const SQL = `
-        INSERT INTO customers(id, name) VALUES($1, $2) RETURNING *
+        INSERT INTO restaurants(id, name) VALUES($1, $2) RETURNING *
     `;
     const response = await client.query(SQL, [uuid.v4(), name]);
     return response.rows[0];
 };
 
+const createReservation = async({ date, party_count, restaurant_id, customer_id }) => {
+    const SQL = `
+        INSERT INTO reservations (
+            id, date, party_count, restaurant_id, customer_id)
+        VALUES($1, $2, $3, $4, $5)
+        RETURNING *;
+    `;
+    const response = await client.query(SQL, [uuid.v4(), date, party_count, restaurant_id, customer_id]);
+    return response.rows[0];
+};
+
+
 const fetchCustomers = async() => {
     const SQL = `
-        SELECT * from customers
+        SELECT * FROM customers
     `;
     const response = await client.query(SQL);
     return response.rows;
@@ -56,26 +68,15 @@ const fetchCustomers = async() => {
 
 const fetchRestaurants = async() => {
     const SQL = `
-        SELECT * from restaurants
+        SELECT * FROM restaurants
     `;
     const response = await client.query(SQL);
     return response.rows;
 };
 
-const createReservation = async(date, party_count, restaurant_id, customer_id) => {
-    const SQL = `
-        INSERT INTO reservations (
-            id, date, party_count, restaurant_id, customer_id)
-        VALUES($1, $2, $3, $4)
-        RETURNING *
-    `;
-    const response = await client.query(SQL, [uuid.v4(), date, party_count, restaurant_id, customer_id]);
-    return response.rows[0];
-};
-
 const fetchReservations = async() => {
     const SQL = `
-        SELECT * from reservations
+        SELECT * FROM reservations
     `;
     const response = await client.query(SQL);
     return response.rows;
