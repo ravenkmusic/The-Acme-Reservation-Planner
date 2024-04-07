@@ -63,6 +63,12 @@ app.delete('/api/customers/:customer_id/reservations/:id', async(res, req, next)
     }
 });
 
+//error
+app.use((error, req, res, next) => {
+    res.status(res.status || 500).send({ error: error });
+});
+
+
 //init function
 
 //init invocation
