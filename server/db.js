@@ -3,7 +3,7 @@ const client = new pg.Client(process.env.DATABASE_URL || 'postgres://localhost/a
 const uuid = require('uuid');
 
 const createTables = async()=> {
-    let SQL = `
+    const SQL = `
         DROP TABLE IF EXISTS customers;
         DROP TABLE IF EXISTS restaurants;
         DROP TABLE IF EXIST reservations;
@@ -27,9 +27,67 @@ const createTables = async()=> {
         );
     `;
     await client.query(SQL);
-}
+};
+
+const createCustomer = async(name)=> {
+    const SQL = `
+        INSERT INTO customers(id, name) VALUES($1, $2) RETURNING *
+    `;
+
+    const response = await client.query(SQL, [uuid.v4(), name]);
+    return response.rows[0];
+};
+
+const createRestaurant = async(name)=>{
+    const SQL = `
+        INSERT INTO customers(id, name) VALUES($1, $2) RETURNING *
+    `;
+    const response = await client.query(SQL, [uuid.v4(), name]);
+    return response.rows[0];
+};
+
+const fetchCustomers = async() => {
+    const SQL = `
+        SELECT * from customers
+    `;
+    const response = await client.query(SQL);
+    return response.rows;
+};
+
+const fetchRestaurants = async() => {
+    const SQL = `
+        SELECT * from restaunts
+    `;
+    const response = await client.query(SQL);
+    return response.rows;
+};
+
+const createReservation = async(date, party_count, restaurant_id, customer_id) => {
+    const SQL = `
+        INSERT INTO reservations (
+            id, date, party_count, restaurant_id, customer_id)
+        VALUES($1, $2, $3, $4)
+        RETURNING *
+    `;
+    const response = await client.query(SQL, [uuid.v4(), date, party_count, restaurant_id, customer_id]);
+    return response.rows[0];
+};
+
+const destroyReservation = async(id)=> {
+    const SQL = `
+        DELETE FROM reservations
+        WHERE id = $1 
+    `;
+    await client.query(SQL, [id]);
+};
 
 module.exports = {
     client,
-    createTables
+    createTables,
+    createCustomer,
+    createRestaurant,
+    fetchCustomers,
+    fetchRestaurants,
+    createReservation,
+    destroyReservation
 };
